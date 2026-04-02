@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map Visualizer — マップ可視化ツール</title>
+  <meta name="description" content="マップデータをインタラクティブに可視化・エクスポートするツール">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- ── Header ── -->
+    <header class="app-header" id="app-header">
+      <div class="header-content">
+        <div class="logo">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="7" fill="url(#grad1)" />
+            <circle cx="9" cy="10" r="2.5" fill="white" />
+            <circle cx="19" cy="8" r="2.5" fill="white" />
+            <circle cx="14" cy="20" r="2.5" fill="white" />
+            <line x1="9" y1="10" x2="19" y2="8" stroke="white" stroke-width="1.5" />
+            <line x1="19" y1="8" x2="14" y2="20" stroke="white" stroke-width="1.5" />
+            <line x1="14" y1="20" x2="9" y2="10" stroke="white" stroke-width="1.5" />
+            <defs>
+              <linearGradient id="grad1" x1="0" y1="0" x2="28" y2="28">
+                <stop stop-color="#6366f1" />
+                <stop offset="1" stop-color="#8b5cf6" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <h1>Map Visualizer</h1>
+        </div>
+        <p class="subtitle">マップデータをインタラクティブに可視化</p>
+      </div>
+    </header>
+
+    <!-- ── Main Layout ── -->
+    <div class="main-layout">
+      <!-- Left Panel: Settings -->
+      <aside class="sidebar" id="sidebar">
+        <!-- Map Selection -->
+        <section class="panel" id="map-panel">
+          <div class="panel-header" onclick="togglePanel('map-content')">
+            <h2><span class="icon">🗺️</span> マップ選択</h2>
+            <span class="chevron" id="map-content-chevron">▼</span>
+          </div>
+          <div class="panel-content" id="map-content">
+            <div class="form-group">
+              <label for="map-select">マップ</label>
+              <select id="map-select" class="form-select">
+                <option value="">読み込み中...</option>
+              </select>
+            </div>
+            <div class="map-info" id="map-info" style="display:none;">
+              <div class="info-badges">
+                <span class="badge" id="badge-nodes">0 nodes</span>
+                <span class="badge" id="badge-edges">0 edges</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Drawing Settings -->
+        <section class="panel" id="settings-panel">
+          <div class="panel-header" onclick="togglePanel('settings-content')">
+            <h2><span class="icon">⚙️</span> 描画設定</h2>
+            <span class="chevron" id="settings-content-chevron">▼</span>
+          </div>
+          <div class="panel-content" id="settings-content">
+            <div class="form-group">
+              <label for="param-goal-nodes">🎯 ゴールノード（カンマ区切り）</label>
+              <input type="text" id="param-goal-nodes" placeholder="例: 3, 7, 9">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-node-size">ノードサイズ</label>
+                <input type="number" id="param-node-size" value="150" min="20" max="1000" step="10">
+              </div>
+              <div class="form-group">
+                <label for="param-font-size">フォントサイズ</label>
+                <input type="number" id="param-font-size" value="10" min="4" max="40" step="1">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-width">幅</label>
+                <input type="number" id="param-width" value="10" min="4" max="30" step="0.5">
+              </div>
+              <div class="form-group">
+                <label for="param-height">高さ</label>
+                <input type="number" id="param-height" value="6" min="3" max="20" step="0.5">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-line-width">エッジ太さ</label>
+                <input type="number" id="param-line-width" value="1.0" min="0.1" max="5" step="0.1">
+              </div>
+              <div class="form-group">
+                <label for="param-edge-alpha">エッジ透過度</label>
+                <input type="number" id="param-edge-alpha" value="0.7" min="0.1" max="1" step="0.1">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-node-color">ノード色</label>
+                <input type="color" id="param-node-color" value="#87CEEB" class="color-input">
+                <div class="color-preset-row" id="node-color-presets"></div>
+              </div>
+              <div class="form-group">
+                <label for="param-edge-color">エッジ色</label>
+                <input type="color" id="param-edge-color" value="#666666" class="color-input">
+                <div class="color-preset-row" id="edge-color-presets"></div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-dpi">DPI</label>
+                <input type="number" id="param-dpi" value="300" min="72" max="600" step="50">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="param-labels" checked>
+                  <span>ラベル表示</span>
+                </label>
+                <label>
+                  <input type="checkbox" id="param-edges" checked>
+                  <span>エッジ表示</span>
+                </label>
+                <label>
+                  <input type="checkbox" id="param-transparent">
+                  <span>透明背景</span>
+                </label>
+                <label>
+                  <input type="checkbox" id="param-station">
+                  <span>ステーション強調</span>
+                </label>
+                <label>
+                  <input type="checkbox" id="param-title">
+                  <span>タイトル表示</span>
+                </label>
+                <label>
+                  <input type="checkbox" id="param-edge-weights">
+                  <span>エッジ重み表示</span>
+                </label>
+              </div>
+            </div>
+            <div class="form-row" id="edge-weight-font-row" style="display:none;">
+              <div class="form-group">
+                <label for="param-edge-weight-font">重みフォントサイズ</label>
+                <input type="number" id="param-edge-weight-font" value="7" min="3" max="20" step="1">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Node List -->
+        <section class="panel" id="nodes-panel">
+          <div class="panel-header" onclick="togglePanel('nodes-content')">
+            <h2><span class="icon">📍</span> ノード一覧</h2>
+            <span class="chevron" id="nodes-content-chevron">▼</span>
+          </div>
+          <div class="panel-content" id="nodes-content">
+            <div class="node-list" id="node-list">
+              <div class="empty-state">
+                <p>マップを選択するとノード一覧が表示されます</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Right Panel: Map Preview -->
+      <main class="graph-area" id="graph-area">
+        <div class="graph-toolbar" id="graph-toolbar">
+          <div class="toolbar-title">
+            <span id="current-map-name">マップ未選択</span>
+          </div>
+          <div class="export-buttons">
+            <button class="btn btn-ghost btn-sm" onclick="exportMap('png')" id="export-png-btn">
+              <span>📥 PNG</span>
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="exportMap('pdf')" id="export-pdf-btn">
+              <span>📄 PDF</span>
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="exportMap('eps')" id="export-eps-btn">
+              <span>📐 EPS</span>
+            </button>
+          </div>
+        </div>
+        <div class="graph-container" id="graph-container">
+          <div class="graph-placeholder" id="graph-placeholder">
+            <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+              <rect x="8" y="8" width="64" height="64" rx="10" stroke="#4b5563" stroke-width="2"
+                stroke-dasharray="6 4" />
+              <circle cx="25" cy="30" r="6" stroke="#6366f1" stroke-width="2" fill="none" />
+              <circle cx="55" cy="25" r="6" stroke="#6366f1" stroke-width="2" fill="none" />
+              <circle cx="40" cy="55" r="6" stroke="#6366f1" stroke-width="2" fill="none" />
+              <line x1="25" y1="30" x2="55" y2="25" stroke="#6366f1" stroke-width="1.5" />
+              <line x1="55" y1="25" x2="40" y2="55" stroke="#6366f1" stroke-width="1.5" />
+              <line x1="40" y1="55" x2="25" y2="30" stroke="#6366f1" stroke-width="1.5" />
+            </svg>
+            <p>左のパネルからマップを選択すると<br>ここにマップが表示されます</p>
+          </div>
+          <div id="loading-overlay" class="loading-overlay" style="display:none;">
+            <div class="spinner"></div>
+            <p>マップを描画中...</p>
+          </div>
+          <div id="preview-wrapper"
+            style="width:100%;height:100%;display:none; justify-content:center; align-items:center; overflow:auto; flex-direction:column; padding: 20px;">
+            <img id="map-preview"
+              style="max-width:100%; max-height:calc(100vh - 200px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; flex-shrink:0;"
+              alt="マッププレビュー">
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast notification container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+
+</html>
