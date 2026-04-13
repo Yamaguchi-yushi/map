@@ -1,2 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Environments
+venv/
+env/
+.env
+
+# MacOS
+.DS_Store
+
+# Output
 out/
-out

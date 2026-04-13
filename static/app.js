@@ -212,8 +212,14 @@ async function renderMap() {
     });
 
     if (!res.ok) {
-      const err = await res.json();
-      toast(`描画エラー: ${err.error}`, "error");
+      let errMsg = "不明なエラーが発生しました";
+      try {
+        const err = await res.json();
+        errMsg = err.error || errMsg;
+      } catch (errParse) {
+        errMsg = "サーバー内部エラー（コンソールを確認してください）";
+      }
+      toast(`描画エラー: ${errMsg}`, "error");
       loading.style.display = "none";
       placeholder.style.display = "flex";
       return;
@@ -271,8 +277,14 @@ async function exportMap(format) {
     });
 
     if (!res.ok) {
-      const err = await res.json();
-      toast(`エクスポートエラー: ${err.error}`, "error");
+      let errMsg = "不明なエラーが発生しました";
+      try {
+        const err = await res.json();
+        errMsg = err.error || errMsg;
+      } catch (errParse) {
+        errMsg = "サーバー内部エラー（コンソールを確認してください）";
+      }
+      toast(`エクスポートエラー: ${errMsg}`, "error");
       return;
     }
 

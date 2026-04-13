@@ -261,10 +261,13 @@ def render_map():
 
     try:
         G = load_map(map_name)
+        buf = render_map_to_buf(G, map_name, params, fmt="png")
     except FileNotFoundError as e:
         return jsonify({"error": str(e)}), 404
-
-    buf = render_map_to_buf(G, map_name, params, fmt="png")
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"内部エラー: {str(e)}"}), 500
 
     return send_file(
         buf,
@@ -287,10 +290,13 @@ def export_map():
 
     try:
         G = load_map(map_name)
+        buf = render_map_to_buf(G, map_name, params, fmt=fmt)
     except FileNotFoundError as e:
         return jsonify({"error": str(e)}), 404
-
-    buf = render_map_to_buf(G, map_name, params, fmt=fmt)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"内部エラー: {str(e)}"}), 500
 
     mime = {
         "png": "image/png",
